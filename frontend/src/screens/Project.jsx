@@ -3,25 +3,25 @@ import { UserContext } from '../context/user.context'
 import { useNavigate, useLocation } from 'react-router-dom'
 import axios from '../config/axios'
 import { initializeSocket, receiveMessage, sendMessage } from '../config/socket'
-// import Markdown from 'markdown-to-jsx'
-// import hljs from 'highlight.js';
+import Markdown from 'markdown-to-jsx'
+import hljs from 'highlight.js';
 // import { getWebContainer } from '../config/webcontainer'
 
 
-// function SyntaxHighlightedCode(props) {
-//     const ref = useRef(null)
+function SyntaxHighlightedCode(props) {
+    const ref = useRef(null)
 
-//     React.useEffect(() => {
-//         if (ref.current && props.className?.includes('lang-') && window.hljs) {
-//             window.hljs.highlightElement(ref.current)
+    React.useEffect(() => {
+        if (ref.current && props.className?.includes('lang-') && window.hljs) {
+            window.hljs.highlightElement(ref.current)
 
-//             // hljs won't reprocess the element unless this attribute is removed
-//             ref.current.removeAttribute('data-highlighted')
-//         }
-//     }, [ props.className, props.children ])
+            // hljs won't reprocess the element unless this attribute is removed
+            ref.current.removeAttribute('data-highlighted')
+        }
+    }, [ props.className, props.children ])
 
-//     return <code {...props} ref={ref} />
-// }
+    return <code {...props} ref={ref} />
+}
 
 
 const Project = () => {
@@ -90,24 +90,36 @@ const Project = () => {
 
     }
 
-    // function WriteAiMessage(message) {
+    function WriteAiMessage(message) {
+        let parsedMessage;
+    
+        try {
+            parsedMessage = typeof message === "string" ? JSON.parse(message) : message;
+        } catch (error) {
+            console.error("Error parsing message:", error);
+            return <p>Error displaying message</p>;
+        }
+    
+        console.log("Parsed message:", parsedMessage); // Debugging
+        // parsedMessage = JSON.parse(message.message.trim());
 
-    //     const messageObject = JSON.parse(message)
+        return (
+            <div className="overflow-auto bg-slate-950 text-white rounded-sm p-2">
+                <Markdown
+                    options={{
+                        overrides: {
+                            code: SyntaxHighlightedCode, // Custom syntax highlighting
+                        },
+                    }}
+                >
+                    {parsedMessage.text}
+                </Markdown>
+            </div>
+        );
+    }
 
-    //     return (
-    //         <div
-    //             className='overflow-auto bg-slate-950 text-white rounded-sm p-2'
-    //         >
-    //             <Markdown
-    //                 children={messageObject.text}
-    //                 options={{
-    //                     overrides: {
-    //                         code: SyntaxHighlightedCode,
-    //                     },
-    //                 }}
-    //             />
-    //         </div>)
-    // }
+
+    
 
     useEffect(() => {
 
@@ -126,17 +138,16 @@ const Project = () => {
             console.log(data)
             
             if (data.sender._id == 'ai') {
-
-
+                console.log("hxhzbskbckjdbh")
                 const message = JSON.parse(data.message)
 
-                console.log(message)
+                // console.log(message)
 
-                webContainer?.mount(message.fileTree)
+                // webContainer?.mount(message.fileTree)
 
-                if (message.fileTree) {
-                    setFileTree(message.fileTree || {})
-                }
+                // if (message.fileTree) {
+                //     setFileTree(message.fileTree || {})
+                // }
                 setMessages(prevMessages => [ ...prevMessages, data ]) // Update messages state
             } else {
 
@@ -179,6 +190,8 @@ const Project = () => {
 
 
     // Removed appendIncomingMessage and appendOutgoingMessage functions
+
+
 
     function scrollToBottom() {
         messageBox.current.scrollTop = messageBox.current.scrollHeight
