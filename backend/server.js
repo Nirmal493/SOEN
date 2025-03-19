@@ -10,6 +10,7 @@ import { generateResult } from './services/ai.service.js';
 const port = process.env.PORT || 3000;
 
 
+
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
@@ -23,7 +24,6 @@ io.use(async (socket, next) => {
     try {
 
         const token = socket.handshake.auth?.token || socket.handshake.headers.authorization?.split(' ')[ 1 ];
-       
         const projectId = socket.handshake.query.projectId;
 
         if (!mongoose.Types.ObjectId.isValid(projectId)) {
@@ -32,6 +32,7 @@ io.use(async (socket, next) => {
 
 
         socket.project = await projectModel.findById(projectId);
+
 
         if (!token) {
             return next(new Error('Authentication error'))
@@ -54,8 +55,8 @@ io.use(async (socket, next) => {
 
 })
 
-io.on('connection', socket => {
 
+io.on('connection', socket => {
     socket.roomId = socket.project._id.toString()
 
 
@@ -67,43 +68,43 @@ io.on('connection', socket => {
 
     socket.on('project-message', async data => {
 
-         const message = data.message;
+        const message = data.message;
 
         const aiIsPresentInMessage = message.includes('@ai');
-        console.log(data)
         socket.broadcast.to(socket.roomId).emit('project-message', data)
-
-        console.log("kaam jari hqi")
 
         if (aiIsPresentInMessage) {
 
-            console.log("ai is here")
+
             const prompt = message.replace('@ai', '');
 
             const result = await generateResult(prompt);
-            console.log(result);
 
-             io.to(socket.roomId).emit('project-message', {
-                 message: result,
+
+            io.to(socket.roomId).emit('project-message', {
+                message: result,
                 sender: {
-                     _id: 'ai',
-                     email: 'AI'
-                 }
-             })
+                    _id: 'ai',
+                    email: 'AI'
+                }
+            })
 
 
             return
-         }
+        }
 
 
     })
 
-    socket.on('event', data => { /* ... */});
-    socket.on('disconnect', () => { /* ... */});
-
+    socket.on('disconnect', () => {
+        console.log('user disconnected');
+        socket.leave(socket.roomId)
+    });
 });
 
 
-server.listen(3000, () => {
-    console.log('Server is running on port 3000');
+
+
+server.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 })

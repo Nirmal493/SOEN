@@ -1,9 +1,5 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import dotenv from "dotenv";
+import { GoogleGenerativeAI } from "@google/generative-ai"
 
-dotenv.config();  // Load environment variables
-
-console.log("API Key:", process.env.GOOGLE_AI_KEY);
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_KEY);
 const model = genAI.getGenerativeModel({
@@ -56,7 +52,7 @@ const model = genAI.getGenerativeModel({
                     },
                     "keywords": [],
                     "author": "",
-                    "license": "ISC", 
+                    "license": "ISC",
                     "description": "",
                     "dependencies": {
                         "express": "^4.21.2"
@@ -99,18 +95,15 @@ const model = genAI.getGenerativeModel({
        
        </example>
     
- IMPORTANT : don't use file name like routes/index.js
+ IMPORTANT : don't use file name like routes/index.js  ...  
        
        
     `
-    
-       
-    
 });
 
 export const generateResult = async (prompt) => {
-         const result = await model.generateContent(prompt);
-             return result.response.text();
+
+    const result = await model.generateContent(prompt);
+
+    return result.response.text()
 }
-
-
