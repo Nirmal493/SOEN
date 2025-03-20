@@ -342,7 +342,7 @@ const Login = () => {
         localStorage.setItem("justLoggedIn", "true"); // Prevent immediate toast from useEffect
         setUser(res.data.user);
         toast.success("Login successful!");
-        navigate("/login");
+        navigate("/");
 
         setTimeout(() => {
           localStorage.removeItem("justLoggedIn"); // Clear flag after redirection

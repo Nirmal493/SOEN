@@ -238,6 +238,7 @@ const Home = () => {
     axios
       .get("/projects/all")
       .then((res) => {
+        console.log(res.data.projects);
         setProjects(res.data.projects);
         setError(null);
       })
