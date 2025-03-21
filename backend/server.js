@@ -81,6 +81,37 @@ io.on("connection", (socket) => {
     console.log("user disconnected");
     socket.leave(socket.roomId);
   });
+
+  // Add these event handlers in your server's "connection" event handler
+
+  socket.on("rtc-offer", (data) => {
+    console.log(
+      `Forwarding offer from ${socket.user._id} to room ${socket.roomId}`
+    );
+    // Broadcast to all other clients in the room
+    socket.to(socket.roomId).emit("rtc-offer", data);
+  });
+
+  socket.on("rtc-answer", (data) => {
+    console.log(
+      `Forwarding answer from ${socket.user._id} to room ${socket.roomId}`
+    );
+    socket.to(socket.roomId).emit("rtc-answer", data);
+  });
+
+  socket.on("rtc-ice-candidate", (data) => {
+    console.log(
+      `Forwarding ICE candidate from ${socket.user._id} to room ${socket.roomId}`
+    );
+    socket.to(socket.roomId).emit("rtc-ice-candidate", data);
+  });
+
+  socket.on("rtc-call-ended", (data) => {
+    console.log(
+      `Forwarding call ended from ${socket.user._id} to room ${socket.roomId}`
+    );
+    socket.to(socket.roomId).emit("rtc-call-ended", data);
+  });
 });
 
 server.listen(port, () => {

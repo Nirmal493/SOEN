@@ -2357,6 +2357,8 @@ import {
   sendMessage,
 } from "../config/socket";
 import Markdown from "markdown-to-jsx";
+import CallButton from "../components/callButton";
+
 import hljs from "highlight.js";
 import { getWebContainer } from "../config/webcontainer";
 import ReactMarkdown from "react-markdown";
@@ -2390,6 +2392,7 @@ const Project = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [isUserTyping, setIsUserTyping] = useState(false);
   const typingTimerRef = useRef(null);
+  const [copySuccess, setCopySuccess] = useState("");
 
   const [users, setUsers] = useState([]);
   const [messages, setMessages] = useState([]); // New state variable for messages
@@ -2528,6 +2531,42 @@ const Project = () => {
     return <p>Unknown response format</p>;
   }
 
+  const copyToClipboard = () => {
+    if (currentFile && fileTree[currentFile]) {
+      const content = fileTree[currentFile].file.contents;
+      navigator.clipboard
+        .writeText(content)
+        .then(() => {
+          setCopySuccess("Copied!");
+          setTimeout(() => setCopySuccess(""), 2000);
+        })
+        .catch((err) => {
+          console.error("Failed to copy: ", err);
+          setCopySuccess("Failed to copy!");
+        });
+    }
+  };
+
+  const openOnlineCompiler = () => {
+    if (currentFile && fileTree[currentFile]) {
+      const content = fileTree[currentFile].file.contents;
+      const fileName = currentFile;
+      let compilerUrl = "https://stackblitz.com/edit/js-playground";
+
+      // If the file has a specific extension, we could choose different compilers
+      if (fileName.endsWith(".py")) {
+        compilerUrl = "https://replit.com/languages/python3";
+      } else if (fileName.endsWith(".java")) {
+        compilerUrl = "https://replit.com/languages/java10";
+      } else if (fileName.endsWith(".cpp") || fileName.endsWith(".c")) {
+        compilerUrl = "https://replit.com/languages/cpp";
+      }
+
+      // Open the compiler in a new tab
+      window.open(compilerUrl, "_blank");
+    }
+  };
+
   useEffect(() => {
     initializeSocket(project._id);
 
@@ -2609,6 +2648,11 @@ const Project = () => {
             <span className="font-semibold">{project.name || "Project"}</span>
           </div>
           <div className="flex gap-2">
+            <CallButton
+              projectId={project._id}
+              user={user}
+              participants={project.users || []}
+            />
             <button
               className="flex items-center gap-1 text-slate-100 hover:text-blue-300"
               onClick={() => setIsModalOpen(true)}
@@ -2632,39 +2676,6 @@ const Project = () => {
               ref={messageBox}
               className="message-box p-2 flex-grow flex flex-col gap-2 overflow-y-auto"
             >
-              {/* {messages.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`flex flex-col w-fit max-w-lg p-3 rounded-xl shadow-md transition-all duration-300 ${
-                    msg.sender._id === "ai"
-                      ? "bg-gray-900 text-white border border-gray-700 hover:shadow-lg"
-                      : "bg-blue-900 text-white ml-auto border border-blue-500 hover:shadow-md"
-                  }`}
-                >
-                  <small className="text-xs font-medium opacity-90 flex items-center gap-1">
-                    {msg.sender._id === "ai" ? (
-                      <span className="text-blue-400 flex items-center gap-1">
-                        🤖 <span className="font-bold text-blue-300">SOEN</span>
-                      </span>
-                    ) : (
-                      <span className="text-blue-300 font-bold">
-                        {msg.sender.email.split("@")[0]}
-                      </span>
-                    )}
-                  </small>
-
-                  {msg.sender._id === "ai" ? (
-                    <p className="text-sm leading-relaxed mt-1">
-                      {WriteAiMessage(msg.message)}
-                    </p>
-                  ) : (
-                    <div className="text-sm leading-relaxed mt-1 p-3 rounded-lg shadow-sm bg-blue-400 text-white">
-                      {msg.message}
-                    </div>
-                  )}
-                </div>
-              ))} */}
-
               {messages.map((msg, index) => (
                 <div
                   key={index}
@@ -2829,6 +2840,24 @@ const Project = () => {
             </div>
 
             <div className="actions flex gap-2 ml-auto">
+              <button
+                onClick={copyToClipboard}
+                className="p-2 px-4 bg-gray-600 hover:bg-gray-700 text-white my-1 rounded flex items-center"
+                title="Copy code to clipboard"
+              >
+                <i className="ri-file-copy-line mr-1"></i>
+                {copySuccess ? copySuccess : "Copy"}
+              </button>
+
+              <button
+                onClick={openOnlineCompiler}
+                className="p-2 px-4 bg-purple-600 hover:bg-purple-700 text-white my-1 rounded flex items-center"
+                title="Open in online compiler"
+              >
+                <i className="ri-code-box-line mr-1"></i>
+                Online Compiler
+              </button>
+
               <button
                 onClick={async () => {
                   await webContainer.mount(fileTree);

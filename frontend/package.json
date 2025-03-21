@@ -21,6 +21,7 @@
     "react-router-dom": "^7.3.0",
     "react-toastify": "^11.0.5",
     "remixicon": "^4.5.0",
+    "simple-peer": "^9.11.1",
     "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
